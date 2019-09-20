@@ -7,9 +7,9 @@ For example, if I'm out and about and have my Android tablet, keyboard and an in
 
 For programming, I can use [tmux](https://tmux.github.io/)/[ranger](https://github.com/ranger/ranger)/[neovim](https://neovim.io/) and that works really well. 
 
-But there aren't any terminal-based browsers that work very well. There's Lynx, Links etc, but they don't support Javascript. And there's [Browsh](https://www.brow.sh/) but I personally find the attempts to display graphics unnecessary and annoying. Ideally I'd like something that looks like Lynx but runs Javascript.
+But there aren't any terminal-based browsers that work very well. There's Lynx, Links etc, but they don't support Javascript. And there's [Browsh](https://www.brow.sh/) but it isn't text-only; it tries to display graphics. Ideally I'd like something that looks like Lynx but runs Javascript. Oh, and has vim-like keyboard shortcuts.
 
-The solution is to have a terminal program that uses a headless modern browser. This is how Browsh works. The differences to Browsh are:
+The solution is to have a terminal program that uses a headless modern browser running in the background but displays text to the terminal. This is how Browsh works. The differences to Browsh are:
 
 1. There's no attempt to show graphics. It's strictly text only. If I want to view graphics I can use a normal browser.
 2. It uses headless Chromium instead of headless Firefox.
