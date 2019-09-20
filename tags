@@ -6,4 +6,5 @@
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
 !_TAG_PROGRAM_VERSION	0.0.0	/c7d224bd9c50/
 Introduction	docs/10 Introduction.md	/^### Introduction$/;"	S
+Useful Links	docs/20 Useful links.md	/^### Useful Links$/;"	S
 vincks	README.md	/^# vincks$/;"	c
