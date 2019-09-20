@@ -1,6 +1,8 @@
-
-
 import { terminal as term  } from 'terminal-kit';
+import { openSync, closeSync, writeSync } from 'fs'
+term.clear();
+let buff = Buffer.from([27, 91, 51, 74]);
+process.stdout.write(buff.toString());
 term.black.bgWhite("black");
 term.red(" red ");
 term.green("green ");
