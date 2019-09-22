@@ -1,5 +1,7 @@
 import {terminal as term} from 'terminal-kit';
-import {openSync, closeSync, writeSync} from 'fs';
+import {openSync, closeSync, writeSync, writeFile} from 'fs';
+import {launch} from 'puppeteer';
+
 term.clear();
 let buff = Buffer.from([27, 91, 51, 74]);
 process.stdout.write(buff.toString());
@@ -24,12 +26,12 @@ term.bold('The terminal size is %dx%d\n', term.width, term.height);
 //term.moveTo.cyan( 1 , 1 , "My name is %s, I'm %d.\n" , 'Jack' , 32  ) ;
 
 // Get some user input
-term.magenta('Enter your name: ');
-term.inputField(function(error, input) {
-  term.green("\nYour name is '%s'\n", input);
-});
+// term.magenta('Enter your name: ');
+// term.inputField(function(error, input) {
+//   term.green("\nYour name is '%s'\n", input);
+// });
 
-term.grabInput({mouse: 'button'});
+// term.grabInput({mouse: 'button'});
 
 term.on('key', function(name: string, data: Object) {
   term.saveCursor();
@@ -50,4 +52,20 @@ term.on('key', function(name: string, data: Object) {
 
 term.on('mouse', function(name: string, data: Object) {
   console.log("'mouse' event:", name, data);
+});
+
+async function ssr(url: string) {
+  const browser = await launch({headless: true});
+  const page = await browser.newPage();
+  await page.goto(url, {waitUntil: 'networkidle0'});
+  const html = await page.content(); // serialized HTML of page DOM.
+  await browser.close();
+  return html;
+}
+
+ssr('https://www.google.co.uk').then(html => {
+  // console.log(html);
+  writeFile('output.html', html, err => {
+    if (err != null) console.log('error writing file: ' + err.message);
+  });
 });
