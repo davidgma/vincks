@@ -52,18 +52,17 @@ term.on('key', function(name: string, matches: Array<string>, data: keyData) {
     term.eraseDisplayBelow();
 
     if (Buffer.isBuffer(data.code)) {
-      term('data.code is a buffer:' + data.code + "\n");
+      term('data.code is a buffer:' + data.code + '\n');
       let b = data.code as Buffer;
       //process.stdout.write(buff.toString());
     } else {
-      term('data.code is a number' + "\n");
-      term('data.code is: ' + data.code + "\n");
+      term('data.code is a number' + '\n');
+      term('data.code is: ' + data.code + '\n');
       //process.stdout.write(data.code.toString());
-
     }
-    term("'key' event:", name + "\n");
-    term('data: ' + JSON.stringify(data) + "\n");
-    term('data.code ' + JSON.stringify(data.code) + "\n");
+    term("'key' event:", name + '\n');
+    term('data: ' + JSON.stringify(data) + '\n');
+    term('data.code ' + JSON.stringify(data.code) + '\n');
     term.restoreCursor();
 
     if (Buffer.isBuffer(data.code)) {
@@ -74,7 +73,6 @@ term.on('key', function(name: string, matches: Array<string>, data: keyData) {
       //process.stdout.write(data.code.toString());
     }
 
-
     // Detect CTRL-C and exit 'manually'
     if (name === 'CTRL_C') {
       process.exit();
@@ -83,7 +81,7 @@ term.on('key', function(name: string, matches: Array<string>, data: keyData) {
 });
 
 term.on('mouse', function(name: string, data: Object) {
-  term("'mouse' event:", name, data + "\n");
+  term("'mouse' event:", name, data + '\n');
 });
 
 async function ssr(url: string) {
