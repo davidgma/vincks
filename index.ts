@@ -2,6 +2,12 @@ import {terminal as term} from 'terminal-kit';
 import {openSync, closeSync, writeSync, writeFile} from 'fs';
 import {launch} from 'puppeteer';
 
+interface keyData {
+  isCharacter: boolean;
+  codepoint?: number;
+  code: number | Buffer;
+}
+
 term.clear();
 let buff = Buffer.from([27, 91, 51, 74]);
 process.stdout.write(buff.toString());
@@ -32,17 +38,43 @@ term.bold('The terminal size is %dx%d\n', term.width, term.height);
 // });
 
 // term.grabInput({mouse: 'button'});
+term.grabInput({});
 
-term.on('key', function(name: string, data: Object) {
+term.on('key', function(name: string, matches: Array<string>, data: keyData) {
   term.saveCursor();
   let xStart = 0;
   let yStart = 0;
   term.getCursorLocation((error, x, y) => {
     if (x != undefined) xStart = x;
     if (y != undefined) yStart = y;
-    term.moveTo(0, yStart + 2);
-    console.log("'key' event:", name);
+    // term.moveTo(0, yStart + 2);
+    term.moveTo(0, 6);
+    term.eraseDisplayBelow();
+
+    if (Buffer.isBuffer(data.code)) {
+      term('data.code is a buffer:' + data.code + "\n");
+      let b = data.code as Buffer;
+      //process.stdout.write(buff.toString());
+    } else {
+      term('data.code is a number' + "\n");
+      term('data.code is: ' + data.code + "\n");
+      //process.stdout.write(data.code.toString());
+
+    }
+    term("'key' event:", name + "\n");
+    term('data: ' + JSON.stringify(data) + "\n");
+    term('data.code ' + JSON.stringify(data.code) + "\n");
     term.restoreCursor();
+
+    if (Buffer.isBuffer(data.code)) {
+      let b = data.code as Buffer;
+      process.stdout.write(b.toString());
+    } else {
+      term(name);
+      //process.stdout.write(data.code.toString());
+    }
+
+
     // Detect CTRL-C and exit 'manually'
     if (name === 'CTRL_C') {
       process.exit();
@@ -51,7 +83,7 @@ term.on('key', function(name: string, data: Object) {
 });
 
 term.on('mouse', function(name: string, data: Object) {
-  console.log("'mouse' event:", name, data);
+  term("'mouse' event:", name, data + "\n");
 });
 
 async function ssr(url: string) {
@@ -65,7 +97,7 @@ async function ssr(url: string) {
 
 ssr('https://www.google.co.uk').then(html => {
   // console.log(html);
-  writeFile('output.html', html, err => {
-    if (err != null) console.log('error writing file: ' + err.message);
-  });
+  // writeFile('output.html', html, err => {
+  //   if (err != null) console.log('error writing file: ' + err.message);
+  // });
 });

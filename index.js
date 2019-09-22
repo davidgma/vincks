@@ -1,10 +1,9 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -37,7 +36,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var terminal_kit_1 = require("terminal-kit");
-var fs_1 = require("fs");
 var puppeteer_1 = require("puppeteer");
 terminal_kit_1.terminal.clear();
 var buff = Buffer.from([27, 91, 51, 74]);
@@ -67,7 +65,8 @@ terminal_kit_1.terminal.bold('The terminal size is %dx%d\n', terminal_kit_1.term
 //   term.green("\nYour name is '%s'\n", input);
 // });
 // term.grabInput({mouse: 'button'});
-terminal_kit_1.terminal.on('key', function (name, data) {
+terminal_kit_1.terminal.grabInput({});
+terminal_kit_1.terminal.on('key', function (name, matches, data) {
     terminal_kit_1.terminal.saveCursor();
     var xStart = 0;
     var yStart = 0;
@@ -76,9 +75,31 @@ terminal_kit_1.terminal.on('key', function (name, data) {
             xStart = x;
         if (y != undefined)
             yStart = y;
-        terminal_kit_1.terminal.moveTo(0, yStart + 2);
-        console.log("'key' event:", name);
+        // term.moveTo(0, yStart + 2);
+        terminal_kit_1.terminal.moveTo(0, 6);
+        terminal_kit_1.terminal.eraseDisplayBelow();
+        if (Buffer.isBuffer(data.code)) {
+            terminal_kit_1.terminal('data.code is a buffer:' + data.code + "\n");
+            var b = data.code;
+            //process.stdout.write(buff.toString());
+        }
+        else {
+            terminal_kit_1.terminal('data.code is a number' + "\n");
+            terminal_kit_1.terminal('data.code is: ' + data.code + "\n");
+            //process.stdout.write(data.code.toString());
+        }
+        terminal_kit_1.terminal("'key' event:", name + "\n");
+        terminal_kit_1.terminal('data: ' + JSON.stringify(data) + "\n");
+        terminal_kit_1.terminal('data.code ' + JSON.stringify(data.code) + "\n");
         terminal_kit_1.terminal.restoreCursor();
+        if (Buffer.isBuffer(data.code)) {
+            var b = data.code;
+            process.stdout.write(b.toString());
+        }
+        else {
+            terminal_kit_1.terminal(name);
+            //process.stdout.write(data.code.toString());
+        }
         // Detect CTRL-C and exit 'manually'
         if (name === 'CTRL_C') {
             process.exit();
@@ -86,7 +107,7 @@ terminal_kit_1.terminal.on('key', function (name, data) {
     });
 });
 terminal_kit_1.terminal.on('mouse', function (name, data) {
-    console.log("'mouse' event:", name, data);
+    terminal_kit_1.terminal("'mouse' event:", name, data + "\n");
 });
 function ssr(url) {
     return __awaiter(this, void 0, void 0, function () {
@@ -115,8 +136,7 @@ function ssr(url) {
 }
 ssr('https://www.google.co.uk').then(function (html) {
     // console.log(html);
-    fs_1.writeFile('output.html', html, function (err) {
-        if (err != null)
-            console.log('error writing file: ' + err.message);
-    });
+    // writeFile('output.html', html, err => {
+    //   if (err != null) console.log('error writing file: ' + err.message);
+    // });
 });
