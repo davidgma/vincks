@@ -101,7 +101,7 @@ var m = new Main();
 m.ssr('https://www.google.co.uk').then(function (html) {
     // term.white(html);
     for (var i = 0; i < 100; i++) {
-        terminal_kit_1.terminal.white('hello world');
+        terminal_kit_1.terminal.white('hello world\n');
     }
     // writeFile('output.html', html, err => {
     //   if (err != null) console.log('error writing file: ' + err.message);
