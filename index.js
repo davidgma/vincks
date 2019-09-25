@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -37,105 +38,71 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var terminal_kit_1 = require("terminal-kit");
 var puppeteer_1 = require("puppeteer");
-terminal_kit_1.terminal.clear();
-var buff = Buffer.from([27, 91, 51, 74]);
-process.stdout.write(buff.toString());
-terminal_kit_1.terminal.black.bgWhite('black');
-terminal_kit_1.terminal.red(' red ');
-terminal_kit_1.terminal.green('green ');
-terminal_kit_1.terminal.yellow('yellow ');
-terminal_kit_1.terminal.blue.bgWhite('blue');
-terminal_kit_1.terminal.magenta(' magenta ');
-terminal_kit_1.terminal.cyan('cyan ');
-terminal_kit_1.terminal.white('white ');
-terminal_kit_1.terminal.brightBlack.bgWhite('bright black');
-terminal_kit_1.terminal.brightRed(' bright red ');
-terminal_kit_1.terminal.brightGreen('bright green ');
-terminal_kit_1.terminal.brightYellow('bright yellow ');
-terminal_kit_1.terminal.brightBlue('bright blue ');
-terminal_kit_1.terminal.brightMagenta('bright magenta ');
-terminal_kit_1.terminal.brightCyan('bright cyan ');
-terminal_kit_1.terminal.brightWhite('bright white\n');
-terminal_kit_1.terminal.bold('The terminal size is %dx%d\n', terminal_kit_1.terminal.width, terminal_kit_1.terminal.height);
-//term.moveTo( 1 , 1 , 'Upper-left corner' ) ;
-//term.moveTo.cyan( 1 , 1 , "My name is %s, I'm %d.\n" , 'Jack' , 32  ) ;
-// Get some user input
-// term.magenta('Enter your name: ');
-// term.inputField(function(error, input) {
-//   term.green("\nYour name is '%s'\n", input);
-// });
-// term.grabInput({mouse: 'button'});
-terminal_kit_1.terminal.grabInput({});
-terminal_kit_1.terminal.on('key', function (name, matches, data) {
-    terminal_kit_1.terminal.saveCursor();
-    var xStart = 0;
-    var yStart = 0;
-    terminal_kit_1.terminal.getCursorLocation(function (error, x, y) {
-        if (x != undefined)
-            xStart = x;
-        if (y != undefined)
-            yStart = y;
-        // term.moveTo(0, yStart + 2);
-        terminal_kit_1.terminal.moveTo(0, 6);
-        terminal_kit_1.terminal.eraseDisplayBelow();
-        if (Buffer.isBuffer(data.code)) {
-            terminal_kit_1.terminal('data.code is a buffer:' + data.code + "\n");
-            var b = data.code;
-            //process.stdout.write(buff.toString());
-        }
-        else {
-            terminal_kit_1.terminal('data.code is a number' + "\n");
-            terminal_kit_1.terminal('data.code is: ' + data.code + "\n");
-            //process.stdout.write(data.code.toString());
-        }
-        terminal_kit_1.terminal("'key' event:", name + "\n");
-        terminal_kit_1.terminal('data: ' + JSON.stringify(data) + "\n");
-        terminal_kit_1.terminal('data.code ' + JSON.stringify(data.code) + "\n");
-        terminal_kit_1.terminal.restoreCursor();
-        if (Buffer.isBuffer(data.code)) {
-            var b = data.code;
-            process.stdout.write(b.toString());
-        }
-        else {
-            terminal_kit_1.terminal(name);
-            //process.stdout.write(data.code.toString());
-        }
-        // Detect CTRL-C and exit 'manually'
-        if (name === 'CTRL_C') {
-            process.exit();
-        }
-    });
-});
-terminal_kit_1.terminal.on('mouse', function (name, data) {
-    terminal_kit_1.terminal("'mouse' event:", name, data + "\n");
-});
-function ssr(url) {
-    return __awaiter(this, void 0, void 0, function () {
-        var browser, page, html;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, puppeteer_1.launch({ headless: true })];
-                case 1:
-                    browser = _a.sent();
-                    return [4 /*yield*/, browser.newPage()];
-                case 2:
-                    page = _a.sent();
-                    return [4 /*yield*/, page.goto(url, { waitUntil: 'networkidle0' })];
-                case 3:
-                    _a.sent();
-                    return [4 /*yield*/, page.content()];
-                case 4:
-                    html = _a.sent();
-                    return [4 /*yield*/, browser.close()];
-                case 5:
-                    _a.sent();
-                    return [2 /*return*/, html];
-            }
+var key_handler_1 = require("./key_handler");
+var Main = /** @class */ (function () {
+    function Main() {
+        this._keyHandler = new key_handler_1.KeyHandler();
+        terminal_kit_1.terminal.grabInput({});
+        // term.grabInput({mouse: 'button'});
+        terminal_kit_1.terminal.on('key', this._keyHandler.handle_key);
+        // term.on('mouse', this._keyHandler.handle_mouse);
+    }
+    Main.prototype.test_header = function () {
+        terminal_kit_1.terminal.clear();
+        var buff = Buffer.from([27, 91, 51, 74]);
+        process.stdout.write(buff.toString());
+        terminal_kit_1.terminal.black.bgWhite('black');
+        terminal_kit_1.terminal.red(' red ');
+        terminal_kit_1.terminal.green('green ');
+        terminal_kit_1.terminal.yellow('yellow ');
+        terminal_kit_1.terminal.blue.bgWhite('blue');
+        terminal_kit_1.terminal.magenta(' magenta ');
+        terminal_kit_1.terminal.cyan('cyan ');
+        terminal_kit_1.terminal.white('white ');
+        terminal_kit_1.terminal.brightBlack.bgWhite('bright black');
+        terminal_kit_1.terminal.brightRed(' bright red ');
+        terminal_kit_1.terminal.brightGreen('bright green ');
+        terminal_kit_1.terminal.brightYellow('bright yellow ');
+        terminal_kit_1.terminal.brightBlue('bright blue ');
+        terminal_kit_1.terminal.brightMagenta('bright magenta ');
+        terminal_kit_1.terminal.brightCyan('bright cyan ');
+        terminal_kit_1.terminal.brightWhite('bright white\n');
+        terminal_kit_1.terminal.bold('The terminal size is %dx%d\n', terminal_kit_1.terminal.width, terminal_kit_1.terminal.height);
+    };
+    Main.prototype.ssr = function (url) {
+        return __awaiter(this, void 0, void 0, function () {
+            var browser, page, html;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, puppeteer_1.launch({ headless: true })];
+                    case 1:
+                        browser = _a.sent();
+                        return [4 /*yield*/, browser.newPage()];
+                    case 2:
+                        page = _a.sent();
+                        return [4 /*yield*/, page.goto(url, { waitUntil: 'networkidle0' })];
+                    case 3:
+                        _a.sent();
+                        return [4 /*yield*/, page.content()];
+                    case 4:
+                        html = _a.sent();
+                        return [4 /*yield*/, browser.close()];
+                    case 5:
+                        _a.sent();
+                        return [2 /*return*/, html];
+                }
+            });
         });
-    });
-}
-ssr('https://www.google.co.uk').then(function (html) {
-    // console.log(html);
+    };
+    return Main;
+}());
+var m = new Main();
+// m.test_header();
+m.ssr('https://www.google.co.uk').then(function (html) {
+    // term.white(html);
+    for (var i = 0; i < 100; i++) {
+        terminal_kit_1.terminal.white('hello world');
+    }
     // writeFile('output.html', html, err => {
     //   if (err != null) console.log('error writing file: ' + err.message);
     // });
