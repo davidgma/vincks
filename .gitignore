@@ -6,7 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 
 # tags
-tags 
+tags
+tags.*
 
 # Runtime data
 pids
