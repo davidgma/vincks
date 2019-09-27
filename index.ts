@@ -52,11 +52,11 @@ class Main {
 }
 
 let m = new Main();
-// m.test_header();
+m.test_header();
 
 m.ssr('https://www.google.co.uk').then(html => {
   // term.white(html);
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 5; i++) {
     term.white('hello world\n');
   }
   // writeFile('output.html', html, err => {
