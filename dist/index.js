@@ -41,6 +41,7 @@ var puppeteer_1 = require("puppeteer");
 var key_handler_1 = require("./key_handler");
 var Main = /** @class */ (function () {
     function Main() {
+        this._line = 5;
         this._keyHandler = new key_handler_1.KeyHandler();
         terminal_kit_1.terminal.grabInput({});
         // term.grabInput({mouse: 'button'});
@@ -71,39 +72,81 @@ var Main = /** @class */ (function () {
     };
     Main.prototype.ssr = function (url) {
         return __awaiter(this, void 0, void 0, function () {
-            var browser, page, html;
+            var browser, page, frame, handles, children_length, bodyHandle, i, itemName;
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, puppeteer_1.launch({ headless: true })];
                     case 1:
                         browser = _a.sent();
+                        this._line = 5;
                         return [4 /*yield*/, browser.newPage()];
                     case 2:
                         page = _a.sent();
+                        page.on('domcontentloaded', function (event) {
+                            _this._output('dom content loaded');
+                        });
+                        page.on('error', function (error) {
+                            _this._output('error: ' + error.message);
+                        });
+                        page.on('frameattached', function (frame) {
+                            _this._output('frameattached');
+                        });
+                        page.on('load', function (event) {
+                            _this._output('load');
+                        });
                         return [4 /*yield*/, page.goto(url, { waitUntil: 'networkidle0' })];
                     case 3:
                         _a.sent();
-                        return [4 /*yield*/, page.content()];
+                        this._output('network idle. frames: ' + page.frames().length);
+                        frame = page.mainFrame();
+                        this._output('frame name: ' + frame.name());
+                        this._output('childFrames: ' + frame.childFrames().length);
+                        return [4 /*yield*/, frame.$$('p')];
                     case 4:
-                        html = _a.sent();
-                        return [4 /*yield*/, browser.close()];
+                        handles = _a.sent();
+                        this._output('paragraphs: ' + handles.length);
+                        return [4 /*yield*/, frame.$eval('body', function (element) {
+                                return element.children.length;
+                            })];
                     case 5:
+                        children_length = _a.sent();
+                        this._output('children of body: ' + children_length);
+                        return [4 /*yield*/, frame.$('body')];
+                    case 6:
+                        bodyHandle = _a.sent();
+                        if (!(bodyHandle != null)) return [3 /*break*/, 10];
+                        i = 0;
+                        _a.label = 7;
+                    case 7:
+                        if (!(i < children_length)) return [3 /*break*/, 10];
+                        return [4 /*yield*/, frame.evaluate(function (i, bodyHandle) {
+                                var item = bodyHandle.children.item(i);
+                                if (item != null)
+                                    return item.nodeName;
+                            }, i, bodyHandle)];
+                    case 8:
+                        itemName = _a.sent();
+                        this._output('itemName: ' + itemName);
+                        _a.label = 9;
+                    case 9:
+                        i++;
+                        return [3 /*break*/, 7];
+                    case 10: return [4 /*yield*/, browser.close()];
+                    case 11:
                         _a.sent();
-                        return [2 /*return*/, html];
+                        return [2 /*return*/];
                 }
             });
         });
     };
+    Main.prototype._output = function (message) {
+        terminal_kit_1.terminal.moveTo(0, this._line, message);
+        this._line++;
+    };
     return Main;
-}());
+}()); // End of Main class
 var m = new Main();
 m.test_header();
-m.ssr('https://www.google.co.uk').then(function (html) {
-    // term.white(html);
-    for (var i = 0; i < 5; i++) {
-        terminal_kit_1.terminal.white('hello world\n');
-    }
-    // writeFile('output.html', html, err => {
-    //   if (err != null) console.log('error writing file: ' + err.message);
-    // });
-});
+// m.ssr('https://en.wikipedia.org/wiki/Main_Page').then(html => {});
+m.ssr('https://github.com/GoogleChrome/puppeteer/issues/3051').then(function (html) { });

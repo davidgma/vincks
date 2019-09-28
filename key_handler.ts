@@ -1,5 +1,11 @@
 import {terminal as term} from 'terminal-kit';
 
+/**
+ * The data sent in a key press event.
+ *
+ * @param isCharacter - true is a single character was pressed.
+ * False is a key combination was pressed.
+ */
 interface keyData {
   isCharacter: boolean;
   codepoint?: number;
@@ -45,7 +51,7 @@ export class KeyHandler {
 
     // Detect CTRL-C and exit 'manually'
     if (name === 'CTRL_C') {
-			term.clear();
+      term.clear();
       process.exit();
     }
   }

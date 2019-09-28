@@ -3,13 +3,8 @@ import {openSync, closeSync, writeSync, writeFile} from 'fs';
 import {launch} from 'puppeteer';
 import {KeyHandler} from './key_handler';
 
-interface keyData {
-  isCharacter: boolean;
-  codepoint?: number;
-  code: number | Buffer;
-}
-
 class Main {
+  private _line = 5;
   private _keyHandler: KeyHandler = new KeyHandler();
   constructor() {
     term.grabInput({});
@@ -43,24 +38,67 @@ class Main {
 
   async ssr(url: string) {
     const browser = await launch({headless: true});
-		
+    this._line = 5;
     const page = await browser.newPage();
+    page.on('domcontentloaded', event => {
+      this._output('dom content loaded');
+    });
+    page.on('error', error => {
+      this._output('error: ' + error.message);
+    });
+    page.on('frameattached', frame => {
+      this._output('frameattached');
+    });
+    page.on('load', event => {
+      this._output('load');
+    });
+
     await page.goto(url, {waitUntil: 'networkidle0'});
-    const html = await page.content(); // serialized HTML of page DOM.
+    this._output('network idle. frames: ' + page.frames().length);
+    let frame = page.mainFrame();
+    this._output('frame name: ' + frame.name());
+    this._output('childFrames: ' + frame.childFrames().length);
+    let handles = await frame.$$('p');
+    this._output('paragraphs: ' + handles.length);
+    // for (let handle of handles) {
+    //   const pe = await frame.evaluate(p => {
+    //     return (<HTMLParagraphElement>p).innerText;
+    //   }, handle);
+    //   this._output(pe);
+    // }
+    let children_length = await frame.$eval('body', element => {
+      return (<HTMLElement>element).children.length;
+    });
+    this._output('children of body: ' + children_length);
+    const bodyHandle = await frame.$('body');
+    if (bodyHandle != null) {
+      for (let i = 0; i < children_length; i++) {
+        let itemName = await frame.evaluate(
+          (i, bodyHandle) => {
+						const item = (<HTMLElement>bodyHandle).children.item(i);
+						if (item != null)
+            return item.nodeName;
+          },
+          i,
+          bodyHandle,
+        );
+        this._output('itemName: ' + itemName);
+      }
+    }
+
     await browser.close();
-    return html;
+    return;
   }
-}
+
+  private _output(message: string) {
+    term.moveTo(0, this._line, message);
+    this._line++;
+  }
+} // End of Main class
 
 let m = new Main();
 m.test_header();
 
-m.ssr('https://www.google.co.uk').then(html => {
-  // term.white(html);
-  for (let i = 0; i < 5; i++) {
-    term.white('hello world\n');
-  }
-  // writeFile('output.html', html, err => {
-  //   if (err != null) console.log('error writing file: ' + err.message);
-  // });
-});
+// m.ssr('https://en.wikipedia.org/wiki/Main_Page').then(html => {});
+
+m.ssr('https://github.com/GoogleChrome/puppeteer/issues/3051').then(html => {});
