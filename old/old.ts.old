@@ -1,0 +1,26 @@
+this._output('network idle. frames: ' + page.frames().length);
+    let frame = page.mainFrame();
+    this._output('frame name: ' + frame.name());
+    this._output('childFrames: ' + frame.childFrames().length);
+    let handles = await frame.$$('p');
+    this._output('paragraphs: ' + handles.length);
+        let children_length = await frame.$eval('body', element => {
+      return (<HTMLElement>element).children.length;
+    });
+    this._output('children of body: ' + children_length);
+    const bodyHandle = await frame.$('body');
+    if (bodyHandle != null) {
+      for (let i = 0; i < children_length; i++) {
+        let itemName = await frame.evaluate(
+          (i, bodyHandle) => {
+						const item = (<HTMLElement>bodyHandle).children.item(i);
+						if (item != null)
+            return item.nodeName;
+          },
+          i,
+          bodyHandle,
+        );
+        this._output('itemName: ' + itemName);
+      }
+    }
+

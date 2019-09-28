@@ -2,6 +2,7 @@ import {terminal as term} from 'terminal-kit';
 import {openSync, closeSync, writeSync, writeFile} from 'fs';
 import {launch} from 'puppeteer';
 import {KeyHandler} from './key_handler';
+import {JSDOM} from 'jsdom';
 
 class Main {
   private _line = 5;
@@ -13,10 +14,14 @@ class Main {
     // term.on('mouse', this._keyHandler.handle_mouse);
   }
 
-  test_header() {
+  private _clearAll() {
     term.clear();
     let buff = Buffer.from([27, 91, 51, 74]);
     process.stdout.write(buff.toString());
+  }
+
+  test_header() {
+    this._clearAll();
     term.black.bgWhite('black');
     term.red(' red ');
     term.green('green ');
@@ -50,44 +55,56 @@ class Main {
       this._output('frameattached');
     });
     page.on('load', event => {
-      this._output('load');
+      this._output('loaded');
     });
 
-    await page.goto(url, {waitUntil: 'networkidle0'});
-    this._output('network idle. frames: ' + page.frames().length);
-    let frame = page.mainFrame();
-    this._output('frame name: ' + frame.name());
-    this._output('childFrames: ' + frame.childFrames().length);
-    let handles = await frame.$$('p');
-    this._output('paragraphs: ' + handles.length);
-    // for (let handle of handles) {
-    //   const pe = await frame.evaluate(p => {
-    //     return (<HTMLParagraphElement>p).innerText;
-    //   }, handle);
-    //   this._output(pe);
+    // await page.goto(url, {waitUntil: 'networkidle0'});
+    await page.goto(url);
+    const html = await page.content();
+    const dom = new JSDOM(html);
+    // let paras = dom.window.document.getElementsByTagName('p');
+    const children = dom.window.document.children;
+    this._output('number of children: ' + children.length);
+    this._output(this._iterateOverDom(dom.window.document.documentElement));
+    // this._clearAll();
+    // for (let i = 0; i < paras.length; i++) {
+    //   const para = <HTMLParagraphElement>paras.item(i);
+    //   term(para.innerHTML);
     // }
-    let children_length = await frame.$eval('body', element => {
-      return (<HTMLElement>element).children.length;
-    });
-    this._output('children of body: ' + children_length);
-    const bodyHandle = await frame.$('body');
-    if (bodyHandle != null) {
-      for (let i = 0; i < children_length; i++) {
-        let itemName = await frame.evaluate(
-          (i, bodyHandle) => {
-						const item = (<HTMLElement>bodyHandle).children.item(i);
-						if (item != null)
-            return item.nodeName;
-          },
-          i,
-          bodyHandle,
-        );
-        this._output('itemName: ' + itemName);
-      }
-    }
 
     await browser.close();
     return;
+  }
+
+  private _iterateOverDom(
+    parentElement: HTMLElement,
+    level: number = 0,
+  ): string {
+    let ret = '';
+    if (parentElement.nodeName == '#text') {
+      if (
+        parentElement.textContent != null &&
+        parentElement.textContent.trim() != '#text' &&
+        parentElement.textContent.trim().length > 0
+      )
+        ret = parentElement.nodeName + parentElement.textContent.trim() + '\n';
+    } else if (parentElement.nodeName == 'A') {
+      ret =
+        parentElement.nodeName +
+        ' ' +
+        (<HTMLAnchorElement>parentElement).innerHTML +
+        '\n';
+    } else {
+      ret = "'" + parentElement.nodeName + "'" + '\n';
+    }
+    if (parentElement.childElementCount > 0) {
+      level++;
+      parentElement.childNodes.forEach(child => {
+        ret +=
+          ' '.repeat(level) + this._iterateOverDom(<HTMLElement>child, level);
+      });
+    }
+    return ret;
   }
 
   private _output(message: string) {
@@ -101,4 +118,4 @@ m.test_header();
 
 // m.ssr('https://en.wikipedia.org/wiki/Main_Page').then(html => {});
 
-m.ssr('https://github.com/GoogleChrome/puppeteer/issues/3051').then(html => {});
+m.ssr('https://en.wikipedia.org/wiki/Oliver_Twist').then(html => {});

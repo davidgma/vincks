@@ -39,6 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var terminal_kit_1 = require("terminal-kit");
 var puppeteer_1 = require("puppeteer");
 var key_handler_1 = require("./key_handler");
+var jsdom_1 = require("jsdom");
 var Main = /** @class */ (function () {
     function Main() {
         this._line = 5;
@@ -48,10 +49,13 @@ var Main = /** @class */ (function () {
         terminal_kit_1.terminal.on('key', this._keyHandler.handle_key);
         // term.on('mouse', this._keyHandler.handle_mouse);
     }
-    Main.prototype.test_header = function () {
+    Main.prototype._clearAll = function () {
         terminal_kit_1.terminal.clear();
         var buff = Buffer.from([27, 91, 51, 74]);
         process.stdout.write(buff.toString());
+    };
+    Main.prototype.test_header = function () {
+        this._clearAll();
         terminal_kit_1.terminal.black.bgWhite('black');
         terminal_kit_1.terminal.red(' red ');
         terminal_kit_1.terminal.green('green ');
@@ -72,7 +76,7 @@ var Main = /** @class */ (function () {
     };
     Main.prototype.ssr = function (url) {
         return __awaiter(this, void 0, void 0, function () {
-            var browser, page, frame, handles, children_length, bodyHandle, i, itemName;
+            var browser, page, html, dom, children;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -93,52 +97,66 @@ var Main = /** @class */ (function () {
                             _this._output('frameattached');
                         });
                         page.on('load', function (event) {
-                            _this._output('load');
+                            _this._output('loaded');
                         });
-                        return [4 /*yield*/, page.goto(url, { waitUntil: 'networkidle0' })];
+                        // await page.goto(url, {waitUntil: 'networkidle0'});
+                        return [4 /*yield*/, page.goto(url)];
                     case 3:
+                        // await page.goto(url, {waitUntil: 'networkidle0'});
                         _a.sent();
-                        this._output('network idle. frames: ' + page.frames().length);
-                        frame = page.mainFrame();
-                        this._output('frame name: ' + frame.name());
-                        this._output('childFrames: ' + frame.childFrames().length);
-                        return [4 /*yield*/, frame.$$('p')];
+                        return [4 /*yield*/, page.content()];
                     case 4:
-                        handles = _a.sent();
-                        this._output('paragraphs: ' + handles.length);
-                        return [4 /*yield*/, frame.$eval('body', function (element) {
-                                return element.children.length;
-                            })];
+                        html = _a.sent();
+                        dom = new jsdom_1.JSDOM(html);
+                        children = dom.window.document.children;
+                        this._output('number of children: ' + children.length);
+                        this._output(this._iterateOverDom(dom.window.document.documentElement));
+                        // this._clearAll();
+                        // for (let i = 0; i < paras.length; i++) {
+                        //   const para = <HTMLParagraphElement>paras.item(i);
+                        //   term(para.innerHTML);
+                        // }
+                        return [4 /*yield*/, browser.close()];
                     case 5:
-                        children_length = _a.sent();
-                        this._output('children of body: ' + children_length);
-                        return [4 /*yield*/, frame.$('body')];
-                    case 6:
-                        bodyHandle = _a.sent();
-                        if (!(bodyHandle != null)) return [3 /*break*/, 10];
-                        i = 0;
-                        _a.label = 7;
-                    case 7:
-                        if (!(i < children_length)) return [3 /*break*/, 10];
-                        return [4 /*yield*/, frame.evaluate(function (i, bodyHandle) {
-                                var item = bodyHandle.children.item(i);
-                                if (item != null)
-                                    return item.nodeName;
-                            }, i, bodyHandle)];
-                    case 8:
-                        itemName = _a.sent();
-                        this._output('itemName: ' + itemName);
-                        _a.label = 9;
-                    case 9:
-                        i++;
-                        return [3 /*break*/, 7];
-                    case 10: return [4 /*yield*/, browser.close()];
-                    case 11:
+                        // this._clearAll();
+                        // for (let i = 0; i < paras.length; i++) {
+                        //   const para = <HTMLParagraphElement>paras.item(i);
+                        //   term(para.innerHTML);
+                        // }
                         _a.sent();
                         return [2 /*return*/];
                 }
             });
         });
+    };
+    Main.prototype._iterateOverDom = function (parentElement, level) {
+        var _this = this;
+        if (level === void 0) { level = 0; }
+        var ret = '';
+        if (parentElement.nodeName == '#text') {
+            if (parentElement.textContent != null &&
+                parentElement.textContent.trim() != '#text' &&
+                parentElement.textContent.trim().length > 0)
+                ret = parentElement.nodeName + parentElement.textContent.trim() + '\n';
+        }
+        else if (parentElement.nodeName == 'A') {
+            ret =
+                parentElement.nodeName +
+                    ' ' +
+                    parentElement.innerHTML +
+                    '\n';
+        }
+        else {
+            ret = "'" + parentElement.nodeName + "'" + '\n';
+        }
+        if (parentElement.childElementCount > 0) {
+            level++;
+            parentElement.childNodes.forEach(function (child) {
+                ret +=
+                    ' '.repeat(level) + _this._iterateOverDom(child, level);
+            });
+        }
+        return ret;
     };
     Main.prototype._output = function (message) {
         terminal_kit_1.terminal.moveTo(0, this._line, message);
@@ -149,4 +167,4 @@ var Main = /** @class */ (function () {
 var m = new Main();
 m.test_header();
 // m.ssr('https://en.wikipedia.org/wiki/Main_Page').then(html => {});
-m.ssr('https://github.com/GoogleChrome/puppeteer/issues/3051').then(function (html) { });
+m.ssr('https://en.wikipedia.org/wiki/Oliver_Twist').then(function (html) { });
