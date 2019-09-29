@@ -37,6 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var terminal_kit_1 = require("terminal-kit");
+var fs_1 = require("fs");
 var puppeteer_1 = require("puppeteer");
 var key_handler_1 = require("./key_handler");
 var jsdom_1 = require("jsdom");
@@ -49,13 +50,9 @@ var Main = /** @class */ (function () {
         terminal_kit_1.terminal.on('key', this._keyHandler.handle_key);
         // term.on('mouse', this._keyHandler.handle_mouse);
     }
-    Main.prototype._clearAll = function () {
-        terminal_kit_1.terminal.clear();
-        var buff = Buffer.from([27, 91, 51, 74]);
-        process.stdout.write(buff.toString());
-    };
     Main.prototype.test_header = function () {
-        this._clearAll();
+        // this._clearAll();
+        terminal_kit_1.terminal.fullscreen(true);
         terminal_kit_1.terminal.black.bgWhite('black');
         terminal_kit_1.terminal.red(' red ');
         terminal_kit_1.terminal.green('green ');
@@ -76,7 +73,7 @@ var Main = /** @class */ (function () {
     };
     Main.prototype.ssr = function (url) {
         return __awaiter(this, void 0, void 0, function () {
-            var browser, page, html, dom, children;
+            var browser, page, html, dom, children, rawContent;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -110,19 +107,19 @@ var Main = /** @class */ (function () {
                         dom = new jsdom_1.JSDOM(html);
                         children = dom.window.document.children;
                         this._output('number of children: ' + children.length);
-                        this._output(this._iterateOverDom(dom.window.document.documentElement));
-                        // this._clearAll();
-                        // for (let i = 0; i < paras.length; i++) {
-                        //   const para = <HTMLParagraphElement>paras.item(i);
-                        //   term(para.innerHTML);
-                        // }
+                        rawContent = this._iterateOverDom(dom.window.document.documentElement);
+                        this._output('lines of raw content: ' + rawContent.length);
+                        fs_1.mkdir('/dev/shm/vincks', function (error) {
+                            if (error != null)
+                                _this._output('Error creating directory: ' + error.message) + '\n';
+                            fs_1.writeFile('/dev/shm/vincks/rawContent.txt', rawContent, function (error) {
+                                if (error != null)
+                                    _this._output('Error writing file: ' + error.message) + '\n';
+                                _this._output('Finished writing the raw file');
+                            });
+                        });
                         return [4 /*yield*/, browser.close()];
                     case 5:
-                        // this._clearAll();
-                        // for (let i = 0; i < paras.length; i++) {
-                        //   const para = <HTMLParagraphElement>paras.item(i);
-                        //   term(para.innerHTML);
-                        // }
                         _a.sent();
                         return [2 /*return*/];
                 }
@@ -137,7 +134,11 @@ var Main = /** @class */ (function () {
             if (parentElement.textContent != null &&
                 parentElement.textContent.trim() != '#text' &&
                 parentElement.textContent.trim().length > 0)
-                ret = parentElement.nodeName + parentElement.textContent.trim() + '\n';
+                ret =
+                    parentElement.nodeName +
+                        ' ' +
+                        parentElement.textContent.trim() +
+                        '\n';
         }
         else if (parentElement.nodeName == 'A') {
             ret =

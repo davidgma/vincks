@@ -1,5 +1,5 @@
 import {terminal as term} from 'terminal-kit';
-import {openSync, closeSync, writeSync, writeFile} from 'fs';
+import {writeFile, mkdir} from 'fs';
 import {launch} from 'puppeteer';
 import {KeyHandler} from './key_handler';
 import {JSDOM} from 'jsdom';
@@ -14,14 +14,9 @@ class Main {
     // term.on('mouse', this._keyHandler.handle_mouse);
   }
 
-  private _clearAll() {
-    term.clear();
-    let buff = Buffer.from([27, 91, 51, 74]);
-    process.stdout.write(buff.toString());
-  }
-
   test_header() {
-    this._clearAll();
+    // this._clearAll();
+    term.fullscreen(true);
     term.black.bgWhite('black');
     term.red(' red ');
     term.green('green ');
@@ -65,13 +60,18 @@ class Main {
     // let paras = dom.window.document.getElementsByTagName('p');
     const children = dom.window.document.children;
     this._output('number of children: ' + children.length);
-    this._output(this._iterateOverDom(dom.window.document.documentElement));
-    // this._clearAll();
-    // for (let i = 0; i < paras.length; i++) {
-    //   const para = <HTMLParagraphElement>paras.item(i);
-    //   term(para.innerHTML);
-    // }
+    let rawContent = this._iterateOverDom(dom.window.document.documentElement);
+    this._output('lines of raw content: ' + rawContent.length);
+    mkdir('/dev/shm/vincks', error => {
+      if (error != null)
+        this._output('Error creating directory: ' + error.message) + '\n';
 
+      writeFile('/dev/shm/vincks/rawContent.txt', rawContent, error => {
+        if (error != null)
+          this._output('Error writing file: ' + error.message) + '\n';
+        this._output('Finished writing the raw file');
+      });
+    });
     await browser.close();
     return;
   }
@@ -87,7 +87,11 @@ class Main {
         parentElement.textContent.trim() != '#text' &&
         parentElement.textContent.trim().length > 0
       )
-        ret = parentElement.nodeName + parentElement.textContent.trim() + '\n';
+        ret =
+          parentElement.nodeName +
+          ' ' +
+          parentElement.textContent.trim() +
+          '\n';
     } else if (parentElement.nodeName == 'A') {
       ret =
         parentElement.nodeName +

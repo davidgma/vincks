@@ -24,3 +24,8 @@ this._output('network idle. frames: ' + page.frames().length);
       }
     }
 
+  // private _clearAll() {
+  //   term.clear();
+  //   let buff = Buffer.from([27, 91, 51, 74]);
+  //   process.stdout.write(buff.toString());
+  // }
