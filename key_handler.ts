@@ -51,7 +51,7 @@ export class KeyHandler {
 
     // Detect CTRL-C and exit 'manually'
     if (name === 'CTRL_C') {
-      term.clear();
+			term.fullscreen(false);
       process.exit();
     }
   }

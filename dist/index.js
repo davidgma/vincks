@@ -45,14 +45,13 @@ var Main = /** @class */ (function () {
     function Main() {
         this._line = 5;
         this._keyHandler = new key_handler_1.KeyHandler();
+        terminal_kit_1.terminal.fullscreen(true);
         terminal_kit_1.terminal.grabInput({});
         // term.grabInput({mouse: 'button'});
         terminal_kit_1.terminal.on('key', this._keyHandler.handle_key);
         // term.on('mouse', this._keyHandler.handle_mouse);
     }
     Main.prototype.test_header = function () {
-        // this._clearAll();
-        terminal_kit_1.terminal.fullscreen(true);
         terminal_kit_1.terminal.black.bgWhite('black');
         terminal_kit_1.terminal.red(' red ');
         terminal_kit_1.terminal.green('green ');

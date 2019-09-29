@@ -78,7 +78,7 @@ var KeyHandler = /** @class */ (function () {
         terminal_kit_1.terminal.restoreCursor();
         // Detect CTRL-C and exit 'manually'
         if (name === 'CTRL_C') {
-            terminal_kit_1.terminal.clear();
+            terminal_kit_1.terminal.fullscreen(false);
             process.exit();
         }
     };

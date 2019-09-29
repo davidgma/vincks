@@ -8,6 +8,7 @@ class Main {
   private _line = 5;
   private _keyHandler: KeyHandler = new KeyHandler();
   constructor() {
+    term.fullscreen(true);
     term.grabInput({});
     // term.grabInput({mouse: 'button'});
     term.on('key', this._keyHandler.handle_key);
@@ -15,8 +16,6 @@ class Main {
   }
 
   test_header() {
-    // this._clearAll();
-    term.fullscreen(true);
     term.black.bgWhite('black');
     term.red(' red ');
     term.green('green ');
