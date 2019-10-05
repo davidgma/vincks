@@ -1,0 +1,6 @@
+#!/bin/bash
+echo Compiling...
+time tsc
+echo Running...
+time node ./dist/index.js
+

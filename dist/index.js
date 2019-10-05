@@ -41,6 +41,10 @@ var fs_1 = require("fs");
 var puppeteer_1 = require("puppeteer");
 var key_handler_1 = require("./key_handler");
 var jsdom_1 = require("jsdom");
+var file_utils_1 = require("./file-utils");
+/**
+ *
+ */
 var Main = /** @class */ (function () {
     function Main() {
         this._line = 5;
@@ -72,7 +76,7 @@ var Main = /** @class */ (function () {
     };
     Main.prototype.ssr = function (url) {
         return __awaiter(this, void 0, void 0, function () {
-            var browser, page, html, dom, children, rawContent;
+            var browser, page, html, dom, children, rawContent, tmpDir;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -108,17 +112,17 @@ var Main = /** @class */ (function () {
                         this._output('number of children: ' + children.length);
                         rawContent = this._iterateOverDom(dom.window.document.documentElement);
                         this._output('lines of raw content: ' + rawContent.length);
-                        fs_1.mkdir('/dev/shm/vincks', function (error) {
+                        tmpDir = '/dev/shm/vincks';
+                        return [4 /*yield*/, file_utils_1.FileUtils.mkDir(tmpDir)];
+                    case 5:
+                        _a.sent();
+                        fs_1.writeFile(tmpDir + '/rawContent.txt', rawContent, function (error) {
                             if (error != null)
-                                _this._output('Error creating directory: ' + error.message) + '\n';
-                            fs_1.writeFile('/dev/shm/vincks/rawContent.txt', rawContent, function (error) {
-                                if (error != null)
-                                    _this._output('Error writing file: ' + error.message) + '\n';
-                                _this._output('Finished writing the raw file');
-                            });
+                                _this._output('Error writing file: ' + error.message) + '\n';
+                            _this._output('Finished writing the raw file');
                         });
                         return [4 /*yield*/, browser.close()];
-                    case 5:
+                    case 6:
                         _a.sent();
                         return [2 /*return*/];
                 }

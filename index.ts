@@ -3,7 +3,11 @@ import {writeFile, mkdir} from 'fs';
 import {launch} from 'puppeteer';
 import {KeyHandler} from './key_handler';
 import {JSDOM} from 'jsdom';
+import {FileUtils} from './file-utils';
 
+/**
+ *
+ */
 class Main {
   private _line = 5;
   private _keyHandler: KeyHandler = new KeyHandler();
@@ -61,16 +65,14 @@ class Main {
     this._output('number of children: ' + children.length);
     let rawContent = this._iterateOverDom(dom.window.document.documentElement);
     this._output('lines of raw content: ' + rawContent.length);
-    mkdir('/dev/shm/vincks', error => {
+    let tmpDir = '/dev/shm/vincks';
+    await FileUtils.mkDir(tmpDir);
+    writeFile(tmpDir + '/rawContent.txt', rawContent, error => {
       if (error != null)
-        this._output('Error creating directory: ' + error.message) + '\n';
-
-      writeFile('/dev/shm/vincks/rawContent.txt', rawContent, error => {
-        if (error != null)
-          this._output('Error writing file: ' + error.message) + '\n';
-        this._output('Finished writing the raw file');
-      });
+        this._output('Error writing file: ' + error.message) + '\n';
+      this._output('Finished writing the raw file');
     });
+
     await browser.close();
     return;
   }
